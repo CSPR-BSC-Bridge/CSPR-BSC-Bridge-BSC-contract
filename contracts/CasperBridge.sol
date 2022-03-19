@@ -188,7 +188,7 @@ contract CasperBridge is Context, Ownable {
 
     event Mint(string _txHash, string _sender, address _recipient, uint256 _amount);
     event Burn(address _sender, string _recipient, uint256 _amount);
-    event CompleteTx(uint256 _bscTxNumber, address _sender, string _recipient, uint256 _amount, string _casperTxHash);
+//    event CompleteTx(uint256 _bscTxNumber, address _sender, string _recipient, uint256 _amount, string _casperTxHash);
 
     constructor(address _token) {
         require(_token != address(0x0));
@@ -222,13 +222,13 @@ contract CasperBridge is Context, Ownable {
         emit Burn(_sender, _recipient, _amount);
     }
 
-    function completeTx(uint256 _bscTxNumber, string memory _casperTxHash) external onlyOwner {
-        require(_bscTxNumber != 0, "BSC Tx number is 0");
-        require(_bscTxNumber <= bscTxNumber, "BSC Tx number is invalid");
-        require(keccak256(abi.encodePacked(_casperTxHash)) == keccak256(abi.encodePacked("")), "Casper Tx Hash is invalid");
-        BscTx storage bscTx = bscTxInfo[_bscTxNumber];
-        bscTx.casperTxHash = _casperTxHash;
-
-        emit CompleteTx(_bscTxNumber, bscTx.sender, bscTx.recipient, bscTx.amount, _casperTxHash);
-    }
+//    function completeTx(uint256 _bscTxNumber, string memory _casperTxHash) external onlyOwner {
+//        require(_bscTxNumber != 0, "BSC Tx number is 0");
+//        require(_bscTxNumber <= bscTxNumber, "BSC Tx number is invalid");
+//        require(keccak256(abi.encodePacked(_casperTxHash)) == keccak256(abi.encodePacked("")), "Casper Tx Hash is invalid");
+//        BscTx storage bscTx = bscTxInfo[_bscTxNumber];
+//        bscTx.casperTxHash = _casperTxHash;
+//
+//        emit CompleteTx(_bscTxNumber, bscTx.sender, bscTx.recipient, bscTx.amount, _casperTxHash);
+//    }
 }
