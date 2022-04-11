@@ -208,18 +208,19 @@ contract CasperBridge is Context, Ownable {
         emit Mint(_txHash, _sender, _recipient, _amount);
     }
 
-    function burn(address _sender, string memory _recipient, uint256 _amount) external onlyOwner {
-        token.burn(_sender, _amount);
+    function burn(string memory _recipient, uint256 _amount) external {
+        require(_amount <= token.balanceOf(msg.sender), "amount is invalid");
+        token.burn(msg.sender, _amount);
         BscTx memory bscTx = BscTx({
             amount: _amount,
-            sender: _sender,
+            sender: msg.sender,
             recipient: _recipient,
             casperTxHash: ""
         });
         bscTxNumber += 1;
         bscTxInfo[bscTxNumber] = bscTx;
 
-        emit Burn(_sender, _recipient, _amount);
+        emit Burn(msg.sender, _recipient, _amount);
     }
 
 //    function completeTx(uint256 _bscTxNumber, string memory _casperTxHash) external onlyOwner {
