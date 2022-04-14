@@ -108,9 +108,9 @@ interface IBEP20 {
    */
   function transfer(address recipient, uint256 amount) external returns (bool);
 
-  function mint(address to, uint256 amount) external returns(bool);
+  function mint(address to, uint256 amount) external returns(uint256);
 
-  function burn(address from, uint256 amount) external returns(bool);
+  function burn(address from, uint256 amount) external returns(uint256);
 
   /**
    * @dev Returns the remaining number of tokens that `spender` will be
@@ -186,8 +186,8 @@ contract CasperBridge is Context, Ownable {
 
     IBEP20 immutable public token;
 
-    event Mint(string _txHash, string _sender, address _recipient, uint256 _amount);
-    event Burn(address _sender, string _recipient, uint256 _amount);
+    event Mint(string _txHash, string _sender, address _recipient, uint256 _amount, uint256 amount);
+    event Burn(address _sender, string _recipient, uint256 _amount, uint256 amount);
 //    event CompleteTx(uint256 _bscTxNumber, address _sender, string _recipient, uint256 _amount, string _casperTxHash);
 
     constructor(address _token) {
@@ -197,7 +197,7 @@ contract CasperBridge is Context, Ownable {
 
     function mint(string memory _txHash, string memory _sender, address _recipient, uint256 _amount) external onlyOwner{
         require(casperTxInfo[_txHash].recipient == address(0x0), "This transaction was already completed");
-        token.mint(_recipient, _amount);
+        uint256 amount = token.mint(_recipient, _amount);
         CasperTx memory casperTx = CasperTx({
             amount: _amount,
             sender: _sender,
@@ -205,12 +205,12 @@ contract CasperBridge is Context, Ownable {
         });
         casperTxInfo[_txHash] = casperTx;
 
-        emit Mint(_txHash, _sender, _recipient, _amount);
+        emit Mint(_txHash, _sender, _recipient, _amount, amount);
     }
 
     function burn(string memory _recipient, uint256 _amount) external {
         require(_amount <= token.balanceOf(msg.sender), "amount is invalid");
-        token.burn(msg.sender, _amount);
+        uint256 amount = token.burn(msg.sender, _amount);
         BscTx memory bscTx = BscTx({
             amount: _amount,
             sender: msg.sender,
@@ -220,7 +220,7 @@ contract CasperBridge is Context, Ownable {
         bscTxNumber += 1;
         bscTxInfo[bscTxNumber] = bscTx;
 
-        emit Burn(msg.sender, _recipient, _amount);
+        emit Burn(msg.sender, _recipient, _amount, amount);
     }
 
 //    function completeTx(uint256 _bscTxNumber, string memory _casperTxHash) external onlyOwner {
