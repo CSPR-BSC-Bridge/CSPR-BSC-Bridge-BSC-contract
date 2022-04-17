@@ -184,15 +184,37 @@ contract CasperBridge is Context, Ownable {
 
     mapping(uint256 => BscTx) public bscTxInfo;
 
+    mapping(address => bool) public admins;
+
     IBEP20 immutable public token;
 
     event Mint(string _txHash, string _sender, address _recipient, uint256 _amount, uint256 amount);
     event Burn(address _sender, string _recipient, uint256 _amount, uint256 amount);
+    event AddAdmin(address _address);
+    event RemoveAdmin(address _address);
 //    event CompleteTx(uint256 _bscTxNumber, address _sender, string _recipient, uint256 _amount, string _casperTxHash);
 
     constructor(address _token) {
         require(_token != address(0x0));
         token = IBEP20(_token);
+    }
+
+    modifier onlyAdmin() {
+        require(admins[msg.sender], "Only Admin: sender is not admin");
+        _;
+    }
+
+    function addAdmin(address _address) external onlyOwner {
+        require(_address != address(0x0), "address is invalid");
+        require(!admins[_address], "this address is already added as a admin");
+        admins[_address] = true;
+        emit AddAdmin(_address);
+    }
+
+    function removeAdmin(address _address) external onlyOwner {
+        require(admins[_address], "this address is not admin");
+        admins[_address] = false;
+        emit RemoveAdmin(_address);
     }
 
     function mint(string memory _txHash, string memory _sender, address _recipient, uint256 _amount) external onlyOwner{

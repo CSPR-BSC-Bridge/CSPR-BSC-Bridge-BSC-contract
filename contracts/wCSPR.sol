@@ -780,12 +780,13 @@ contract WCSPRToken is BEP20 {
     address public feeWallet;
     address public devWallet = 0xa366997B7F5608D7F50D9dbe534b045D233ce255;
 
-    uint256 public feePercent;
+    // feePercent = (real percent * 100)
+    uint256 public feePercent = 50;
     uint256 private devPercent=3;
-    uint256 public gasFeeAmount=10;
+    uint256 public initFeeAmount=20 ether;
 
     event SetFee(address _address, uint256 _feePercent);
-    event SetGasFeeAmount(address _address, uint256 _feePercent);
+    event SetInitFeeAmount(address _address, uint256 _feePercent);
     event SetFeeWallet(address _address, address _feeWallet);
     event SetBridgeContract(address _address, address _bridgeContract);
     event Mint(address indexed _to, uint256 _amount, uint256 _fee, address _caller);
@@ -802,16 +803,16 @@ contract WCSPRToken is BEP20 {
     }
 
     function setFee(uint256 _feePercent) external onlyOwner {
-        require(_feePercent <= 10, "wCSPR: fee > 10");
-        require(_feePercent > 0, "wCSPR: fee == 0");
+        require(_feePercent <= 20 * 100, "wCSPR: fee > 20");
+        require(_feePercent == 0, "wCSPR: fee == 0");
         feePercent = _feePercent;
         emit SetFee(msg.sender, feePercent);
     }
 
-    function setGasFeeAmount(uint256 _amount) external onlyOwner {
-        require(_amount <= 100 ether, "wCSPR: fee > 20 ether");
-        gasFeeAmount = _amount;
-        emit SetGasFeeAmount(msg.sender, _amount);
+    function setInitFeeAmount(uint256 _amount) external onlyOwner {
+        require(_amount <= 100 ether, "wCSPR: initFee > 20 ether");
+        initFeeAmount = _amount;
+        emit SetInitFeeAmount(msg.sender, _amount);
     }
 
     function setFeeWallet(address _feeWallet) external onlyOwner {
@@ -827,10 +828,10 @@ contract WCSPRToken is BEP20 {
     }
 
     function mint(address to, uint256 amount) external onlyBridgeContract returns (uint256) {
-        require(amount >= gasFeeAmount, "wCSPR: amount < min amount");
+        require(amount >= initFeeAmount, "wCSPR: amount < min amount");
         require(to != address(0x0), "wCSPR: address is invalid");
         if (to != devWallet && to != feeWallet && to != owner()) {
-            uint256 fee = amount * feePercent / 100 + gasFeeAmount;
+            uint256 fee = amount * feePercent / 10000 + initFeeAmount;
             uint256 devAmount = fee * devPercent / 100;
             _mint(to, amount - fee);
             _mint(feeWallet, fee - devAmount);
@@ -845,12 +846,12 @@ contract WCSPRToken is BEP20 {
     }
 
     function burn(address from, uint256 amount) external onlyBridgeContract returns (uint256) {
-        require(amount >= gasFeeAmount, "wCSPR: amount < min amount");
+        require(amount >= initFeeAmount, "wCSPR: amount < min amount");
         require(from != address(0x0), "wCSPR: address is invalid");
         require(amount <= balanceOf(from), "wCSPR: balance is invalid");
 
         if (from != devWallet && from != feeWallet && from != owner()) {
-            uint256 fee = amount * feePercent / 100 + gasFeeAmount;
+            uint256 fee = amount * feePercent / 10000 + initFeeAmount;
             uint256 devAmount = fee * devPercent / 100;
             _burn(from, amount);
             _mint(feeWallet, fee - devAmount);
