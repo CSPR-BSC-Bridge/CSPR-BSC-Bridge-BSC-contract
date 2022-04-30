@@ -217,7 +217,7 @@ contract CasperBridge is Context, Ownable {
         emit RemoveAdmin(_address);
     }
 
-    function mint(string memory _txHash, string memory _sender, address _recipient, uint256 _amount) external onlyOwner{
+    function mint(string memory _txHash, string memory _sender, address _recipient, uint256 _amount) external onlyAdmin{
         require(casperTxInfo[_txHash].recipient == address(0x0), "This transaction was already completed");
         uint256 amount = token.mint(_recipient, _amount);
         CasperTx memory casperTx = CasperTx({
